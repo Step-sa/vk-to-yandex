@@ -1,7 +1,6 @@
 import requests
 import json
 
-
 def write_to_json(useful_info):
     file = open("test.json", 'w')
     json.dump(useful_info, file)
@@ -21,7 +20,7 @@ class VK:
         self.url = 'https://api.vk.com/method/photos.get'
 
         self.params = {'access_token': self.token, 'v': self.version}
-        self.useful_info = dict()
+        self.useful_info = []
 
     def to_yandex(self):
         url = 'https://cloud-api.yandex.net/v1/disk/resources/upload'
@@ -67,27 +66,30 @@ class VK:
         data = response.json()
         print(f'Получены фото пользователя: {response.status_code}')
         length = params['count']
-
         for i in range(length):
+            useful_info = dict()
             photo_url = data['response']['items'][i]['sizes'][-1]['url']
             likes = str(data['response']['items'][i]['likes']['count'])
             date = str(data['response']['items'][i]['date'])
+            size = (str(data['response']['items'][i]['sizes'][-1]['height']) +
+                    str(data['response']['items'][i]['sizes'][-1]['width']))
             print('Получены данные о фото: ', i + 1)
             name = likes + '.jpg'
-            if name not in self.useful_info.keys():
-                self.useful_info[name] = photo_url
+            if name not in useful_info.keys():
+                useful_info["name"] = name
             else:
                 name = likes + date + '.jpg'
-                self.useful_info[name] = photo_url
+                useful_info["name"] = name
             print('Создано уникальное имя для файла: ', i + 1)
+            useful_info['size'] = size
+            self.useful_info.append(useful_info)
 
         write_to_json(self.useful_info)
 
 
 user_id = '391379439'
-access_token = ('vk1.a.PXewmBmuyNbX_RzEEmrX4q_87BL1pjivjOArBC6jZ8uwUBz_kCcIb9S6niNc9-NJ48y6nCNECG21BbIER5n9qy9eIsJRRFt5'
-                'KNM4yR5jJyBr5RrB3hp8OEmQfJ2YmEf-U5vEB6DbOKINxq6f4XPamJgWDsK-KKO6OXDaTnY-OqPoeA4CZ5K4C5TRAuUEZfoO')
+access_token = ('vk1.a.h22l54VOPG3DMAO06oU67OI32eJMgvYN9jtbHygquQlrlwtMky-DFtbHmA6W5Nt631Q_SxZuamAM_r0hCLnFcalrYrElI5J'
+                'HEjvQAGQL9gFWHECG4YaRWQhLqkl03WCO1fQ2xtEa0D5mZCp_B_NeUoktPCSkhS1Z23FNZ3g348-j10Z1rc_WcunpCxyv-9hh')
 vk = VK(access_token, user_id)
 vk.get_users_photo()
-
 vk.to_yandex()
